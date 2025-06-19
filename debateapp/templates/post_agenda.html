@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Post Agenda{% endblock %}
+
+    {% block contents %}
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class="col offset-2"></div>
+            <!-- ファイルをアップロードする際にはformでenctype="multipart/form-data"が必要だが、要検討 -->
+            <form method="post">
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <th>議題(討論したい内容を簡潔に)</th>
+                        <td>{{ form.title }}</td>
+                    </tr>
+                    <tr>
+                        <th>コメント</th>
+                        <td>{{ form.comment }}</td>
+                    </tr>
+                </table>
+                <hr>
+                <button type="submit">この議題を提出する</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
