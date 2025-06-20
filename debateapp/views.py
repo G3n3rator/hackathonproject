@@ -26,7 +26,7 @@ import requests
 from .models import DebateMessage
 from accountsapp.models import CustomUser
 from asgiref.sync import sync_to_async
-#30行目のimportは池川による改変
+#30行目は池川による改変
 from django.db.models import Q
 import logging
 class IndexView(ListView):
