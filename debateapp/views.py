@@ -26,6 +26,8 @@ import requests
 from .models import DebateMessage
 from accountsapp.models import CustomUser
 from asgiref.sync import sync_to_async
+#30行目のimportは池川による改変
+from django.db.models import Q
 import logging
 class IndexView(ListView):
     '''
@@ -154,3 +156,19 @@ def save_message(request, pk):
     # エラー発生したら、エラーの内容出力
     except requests.exceptions.RequestException as e:
         return JsonResponse({"error":str(e)}, status=500)
+
+#以下のdefは池川による改変
+def title_serch(request):
+    form = ThreadSearchForm(request.GET)
+    titles = AgendaPost.objects.all()
+    if form.is_valid():
+        query = form.cleaned_data.get('query')
+        if query:
+            titles = titles.filter(name__icontains=query)
+     context = {
+        'form': form,
+        'titles': titles,
+        'query': query if 'query' in locals() else '',
+    }
+#一旦保存
+    return render(request, 'your_app_name/thread_search.html', context)
