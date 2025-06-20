@@ -170,4 +170,5 @@ def title_serch(request):
         'titles': titles,
         'query': query if 'query' in locals() else '',
     }
+#とりあえずdebate_list.htmlに飛ばしてる。ホンマにとりあえずやからできればウェブサイトのホームにでも書いてくれ。
     return render(request, 'debateapp/templates/decate_list.html', context)
