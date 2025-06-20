@@ -13,6 +13,9 @@ class AgendaPostForm(ModelForm):
         '''
         model = AgendaPost
         fields = ['title', 'comment']
+'''
+以下池川による改変
+'''
 
 class Serch(forms.Form):
     query = forms.CharField(label='検索キーワード', max_length=200, required=False)
