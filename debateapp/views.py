@@ -170,5 +170,4 @@ def title_serch(request):
         'titles': titles,
         'query': query if 'query' in locals() else '',
     }
-#一旦保存
-    return render(request, 'your_app_name/thread_search.html', context)
+    return render(request, 'debateapp/templates/decate_list.html', context)
