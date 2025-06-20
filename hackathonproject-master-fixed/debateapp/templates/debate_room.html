@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{{ object.title }}</title>
+</head>
+<body>
+    <h1>{{ object.title }}</h1>
+    <p>{{ object.comment }}</p>
+
+    <!-- return falseによってページを再読み込みしないようにする -->
+     <!--- submit時にonsubmitButton_Send()という関数を呼ぶ -->
+    <form action="" onsubmit="onsubmitButton_Send(); return false;">
+        <!-- Message : <input type="text" id="input_message" autocomplete="off" style="width:30px; height:40px;"autofocus /> -->
+        <textarea id="input_message" placeholder="メッセージ" name="message" autocomplete="off" autofocus style="display: inline-block; width: 100%; padding: 10px; border: 1px solid #999; box-sizing: border-box; background: #f2f2f2; margin: 0.5em 0; line-height: 1.5; height: 6em;"></textarea>
+        <input type="submit" value="Send" />
+    </form>
+
+    <ul id="list_message"></ul>
+
+    <script>
+        const g_elementInputMessage = document.getElementById( "input_message" );
+        const g_elementListMessage = document.getElementById( "list_message" );
+
+        // WebSocketオブジェクト
+        // 通信のタイプを決める(httpsならwss, それ以外はws)
+        let ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        // WeSocketを使ってサーバーと/ws/debate/というURLで接続(pkを渡すことでwebsocketのURLを討論の空間ごとに変える)
+        const g_socket = new WebSocket( ws_scheme + "://" + window.location.host + "/ws/debate/{{object.pk}}" );
+
+        // 「Send」ボタンを押したときの処理
+        async function onsubmitButton_Send()
+        {
+            event.preventDefault();
+            // 送信用テキストHTML要素からメッセージ文字列の取得
+            let strMessage = g_elementInputMessage.value;
+            // ユーザー名を取得
+            const username = `{{user.username|escapejs}}`;
+            // 何も入力されていなかったら送信しないで止める
+            if(!strMessage.trim()) return;
+            // difyに問い合わせ
+            const response = await fetch("/api/check_message/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({"message":strMessage})
+            });
+            const data = await response.json();
+            // difyからの返答
+            const answer = data.answer?.trim().toUpperCase();
+            if (answer == "YES") {
+                const response2 = await fetch("/save-message/{{object.pk}}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":"application/json"
+                    },
+                    body: JSON.stringify({
+                        "message":strMessage,
+                        "username":username
+                    })
+                });
+                const data2 = await response2.json()
+                // console.log(data2)
+                const answer2 = data2.answer?.trim().toUpperCase();
+                g_socket.send(JSON.stringify({"message":strMessage}));  
+                g_elementInputMessage.value = "";
+                const Matome = document.createElement("div");
+                Matome.textContent = answer2;
+                g_elementListMessage.append(Matome);
+                // console.log(answer2); 
+            } else {
+                alert("あなたの発言はパラグラフライティングで書かれていないか\n筋が通っていない可能性があります。");
+            }   
+        }
+
+        // WebSocketからメッセージ受信時の処理
+        g_socket.onmessage = ( event ) =>
+        {
+            // テキストデータをJSONデータにデコード
+            let data = JSON.parse( event.data );
+
+            // メッセージの整形
+            let strMessage = data["message"];
+                
+            // 拡散されたメッセージをメッセージリストに追加
+            let elementLi = document.createElement( "li" );
+            elementLi.textContent = strMessage;
+            //g_elementListMessage.prepend( elementLi ); // リストの一番上に追加
+            g_elementListMessage.append( elementLi );    // リストの一番下に追加
+        };
+        // WebSocketクローズ時の処理
+        g_socket.onclose = ( event ) =>
+        {
+            // ウェブページを閉じたとき以外のWebSocketクローズは想定外
+            console.error( "Unexpected : Chat socket closed." );
+        };
+    </script>
+</body>
+
+</html>
