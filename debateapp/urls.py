@@ -16,5 +16,5 @@ urlpatterns = [
     path('api/check_message/', dify_proxy),
     path('save-message/<int:pk>', save_message),
     #以下池川による改変
-    path('threads/search/', views.thread_search, name='thread_search'),
+    path('', views.title_search, name='title_search'),
 ]
